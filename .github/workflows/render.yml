@@ -1,0 +1,25 @@
+name: Blender MCP render test
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Blender
+        run: sudo apt-get update && sudo apt-get install -y blender
+      - name: Create scene
+        run: SDL_AUDIODRIVER=dummy blender -b --python demo.py
+      - name: Render scene
+        run: SDL_AUDIODRIVER=dummy blender -b scenes/demo.blend --python render.py -- renders/demo.png 512 16
+      - name: Verify image
+        run: test -s renders/demo.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smm-demo-render
+          path: renders/demo.png
